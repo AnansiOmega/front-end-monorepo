@@ -228,9 +228,12 @@ describe('<Markdownz />', function () {
   describe('#renderMedia', function () {
     let renderMediaSpy
     const src = 'https://panoptes-uploads.zooniverse.org/production/subject_location/66094a64-8823-4314-8ef4-1ee228e49470.jpeg'
+    const oldSrc = 'https://panoptes-uploads.zooniverse.org/production/project_attached_image/0777d224-2e6f-410c-a5fe-885d4c873535.png =60x'
     const altText = 'A placeholder image.'
     const imagePropsMock = { src, alt: altText, children: undefined }
     const imagePropsMockWithSize = { src, alt: `${altText} =100x100`, children: undefined }
+    const oldImagePropsMock = { oldSrc, alt: altText, children: undefined }
+    const oldImagePropsMockWithSize = { oldSrc, alt: `${altText} =100x100`, children: undefined }
     before(function () {
       wrapper = shallow(<Markdownz>{markdown}</Markdownz>)
       renderMediaSpy = sinon.spy(Markdownz.prototype, 'renderMedia')
@@ -269,6 +272,36 @@ describe('<Markdownz />', function () {
 
     it('should remove the width and height declaration from the alt text before setting it on the rendered Image', function () {
       wrapper.instance().renderMedia(imagePropsMockWithSize)
+      const returnedValue = renderMediaSpy.returnValues[0]
+      expect(returnedValue.props.alt).to.equal(altText)
+    }) // Added additional tests to run old image url's v
+    it('should return a Media component with old image url', function () {
+      wrapper.instance().renderMedia(oldImagePropsMock)
+      const returnedValue = renderMediaSpy.returnValues[0]
+      expect(returnedValue.type).to.equal(Media)
+    })
+
+    it('should set the alt attribute with the alt prop with old image url', function () {
+      wrapper.instance().renderMedia(oldImagePropsMock)
+      const returnedValue = renderMediaSpy.returnValues[0]
+      expect(returnedValue.props.alt).to.equal(imagePropsMock.alt)
+    })
+
+    it('should set the src attribute with the src prop with old image url', function () {
+      wrapper.instance().renderMedia(oldImagePropsMock)
+      const returnedValue = renderMediaSpy.returnValues[0]
+      expect(returnedValue.props.src).to.equal(imagePropsMock.src)
+    })
+
+    it('should use the width and height from the alt text if defined with old image url', function () {
+      wrapper.instance().renderMedia(oldImagePropsMockWithSize)
+      const returnedValue = renderMediaSpy.returnValues[0]
+      expect(returnedValue.props.width).to.equal(100)
+      expect(returnedValue.props.height).to.equal(100)
+    })
+
+    it('should remove the width and height declaration from the alt text before setting it on the rendered Image with old image url', function () {
+      wrapper.instance().renderMedia(oldImagePropsMockWithSize)
       const returnedValue = renderMediaSpy.returnValues[0]
       expect(returnedValue.props.alt).to.equal(altText)
     })
